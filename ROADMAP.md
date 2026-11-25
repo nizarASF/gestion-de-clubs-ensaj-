@@ -18,7 +18,7 @@ C'est un **projet universitaire de groupe** (cours de développement web) : le c
 
 | Élément | Décision |
 |---|---|
-| Backend | PHP + **Laravel 13** (`composer create-project laravel/laravel ensaj-clubs "^13.0"`). Laravel 13 exige PHP ≥ 8.3. **Si `php -v` est < 8.3, utilise Laravel 12 (`"^12.0"`)** et signale-le dans le README. |
+| Backend | PHP + **Laravel 12 ou 11** selon la version de PHP disponible (`composer create-project laravel/laravel .`). Si PHP ≥ 8.2, utilise Laravel 11/12. |
 | Base de données | MySQL (XAMPP/MariaDB), via **Eloquent** et des **migrations**. Base : `ensaj_clubs`, utilisateur `root`, mot de passe vide. |
 | Frontend | **Blade + HTML5 + CSS3 + JavaScript vanilla** écrits à la main dans `public/css/` et `public/js/`. |
 | Interdit | **Node, npm, Vite, Tailwind, Bootstrap, Alpine, Livewire, Inertia, React/Vue, jQuery, Breeze, Jetstream, Fortify, Spatie Permission.** Retire toute référence à `@vite` des vues générées. Les assets se chargent avec `asset('css/app.css')` et `asset('js/app.js')`. |
@@ -207,7 +207,7 @@ $t->boolean('is_active')->default(true);
 $t->timestamps();
 
 // 3. add_club_id_to_users_table
-$t->foreignId('club_id')->nullable()->after('role')->constrained()->nullOnDelete();
+$t->foreignId('club_id')->nullable()->after('role')->constrained('clubs')->nullOnDelete();
 
 // 4. posts
 $t->id();
@@ -390,7 +390,7 @@ tests/Feature/
 - **XSS** : toujours `{{ }}`. Le texte des posts et des messages s'affiche avec `{!! nl2br(e($texte)) !!}` (échappé d'abord). Aucun autre `{!! !!}` sur du contenu utilisateur.
 - **Droits** : middleware `role` pour les zones + Policies pour chaque ressource (un membre n'agit que sur son club). Les requêtes partent des relations (`$user->club->posts()`), jamais d'un `find($id)` brut sans contrôle.
 - **Conversations** : accès si `conversation.user_id == moi` **ou** (rôle `club_member` et `conversation.club_id == mon club`). Le BDE n'a aucun accès aux fils des autres.
-- **Uploads** : valider le **type MIME réel** (`mimetypes:`), pas seulement l'extension ; nom de fichier aléatoire (`Str::random(40)`) ; stockage sur le disque `public` dans un sous-dossier (`logos/`, `posts/`, `media/`, `team/`) ; jamais le nom d'origine ; supprimer le fichier du disque quand l'enregistrement est supprimé.
+- **Uploads** : valider le **type MIME réel** (`mimetypes:`), pas seulement l'extension ; nom de fichier aléatoire (`Str::random(40)`) ; stockage sur le disque `public` dans un sous-dossier (`logos/`, `posts/`, `media/`, `team/`) ; jamais le nom d'origine ; **supprimer le fichier physique sur disque (`Storage::disk('public')->delete(...)` via `ImageService::delete`) lors de la suppression de l'enregistrement** (posts, médias, fiches bureau, logos). Attention : `cascadeOnDelete()` en BDD ne supprime pas les fichiers du disque.
 - **Limites** : images `jpeg,png,webp`, **5 Mo max**, **5 images max par post** ; vidéos `mp4,webm`, **50 Mo max**.
 - `throttle` sur login, inscription et envoi de messages. Régénérer la session à la connexion, l'invalider à la déconnexion.
 
@@ -399,7 +399,7 @@ tests/Feature/
 ## 9. Phases d'implémentation (exécute-les toutes dans l'ordre)
 
 ### Phase 1 — Setup et socle
-1. Créer le projet Laravel (section 1). `composer require intervention/image`.
+1. Créer le projet Laravel à la racine du dépôt actuel (`composer create-project laravel/laravel .`). `composer require intervention/image`.
 2. Configurer `.env` et `.env.example` (section 1). Créer la base `ensaj_clubs` (`utf8mb4_unicode_ci`) si possible par ligne de commande (`mysql -u root -e "CREATE DATABASE IF NOT EXISTS ensaj_clubs CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"`), sinon l'expliquer dans le README.
 3. `php artisan storage:link`. Créer `database/seeders/assets/logos/` et `data/`.
 4. Créer les enums, la structure de dossiers, `layouts/app.blade.php` (sans Vite), `public/css/app.css` avec les variables, `public/js/app.js` (menu burger, fermeture des messages flash), les composants Blade de base, les pages 403/404.
