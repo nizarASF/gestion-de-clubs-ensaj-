@@ -61,7 +61,8 @@ class ModerationController extends Controller
     public function approve(Request $request, string $type, int $id)
     {
         $modelClass = $this->modelClass($type);
-        $item = $modelClass::findOrFail($id);
+        // Un élément déjà traité ne peut pas être re-décidé par un POST direct.
+        $item = $modelClass::where('status', Status::Pending->value)->findOrFail($id);
         $this->decide($item, $type, Status::Approved, null, $request->user());
 
         return back()->with('status', ucfirst(self::LABELS[$type]) . ' validé.');
@@ -70,7 +71,7 @@ class ModerationController extends Controller
     public function reject(RejectRequest $request, string $type, int $id)
     {
         $modelClass = $this->modelClass($type);
-        $item = $modelClass::findOrFail($id);
+        $item = $modelClass::where('status', Status::Pending->value)->findOrFail($id);
         $this->decide($item, $type, Status::Rejected, $request->validated('rejection_reason'), $request->user());
 
         return back()->with('status', ucfirst(self::LABELS[$type]) . ' refusé.');

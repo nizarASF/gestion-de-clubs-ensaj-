@@ -30,13 +30,16 @@
          data-fetch-url="<?php echo e(route('conversations.messages.index', $conversation)); ?>">
         <div class="chat__messages" id="chat-messages" data-last-id="<?php echo e($conversation->messages->last()?->id ?? 0); ?>">
             <?php $__empty_1 = true; $__currentLoopData = $conversation->messages; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $message): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                <?php $mine = $message->author_id === auth()->id(); ?>
-                <article class="bubble <?php if($mine): ?> bubble--mine <?php endif; ?> <?php if(! $mine && $message->read_at === null): ?> bubble--unread <?php endif; ?>">
+                <?php
+                    $mine = $message->author_id === auth()->id();
+                    $unread = ! $mine && $message->read_at === null && $message->from_club === $isInitiator;
+                ?>
+                <article class="bubble <?php if($mine): ?> bubble--mine <?php endif; ?> <?php if($unread): ?> bubble--unread <?php endif; ?>">
                     <div class="bubble__head">
                         <strong><?php echo e($message->author->full_name); ?></strong>
                         <span><?php echo e($message->created_at->format('d/m/Y H:i')); ?></span>
                         <?php if($message->type): ?><span class="badge badge--info"><?php echo e($message->type->label()); ?></span><?php endif; ?>
-                        <?php if(! $mine && $message->read_at === null): ?><span class="badge badge--pending">Non lu</span><?php endif; ?>
+                        <?php if($unread): ?><span class="badge badge--pending">Non lu</span><?php endif; ?>
                     </div>
                     <div class="bubble__body"><?php echo e($message->body); ?></div>
                 </article>

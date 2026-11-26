@@ -21,6 +21,9 @@ Un compte créé par inscription est toujours `student` + `pending` : la connexi
 
 ## 2. Prérequis
 
+**Docker (recommandé)** : Docker Engine + Docker Compose (`docker compose`). Aucun PHP, Composer ni XAMPP local.
+
+**XAMPP / PHP local (alternative)** :
 - **XAMPP** avec **MySQL/MariaDB démarré** (ou un MySQL local).
 - **PHP ≥ 8.2** (8.2 suffit pour Laravel 12), avec les extensions `pdo_mysql`, `gd`, `mbstring`, `fileinfo`, `bcmath`, `zip`.
   - Dans le `php.ini` de XAMPP, vérifier la ligne `extension=gd`.
@@ -31,7 +34,30 @@ Aucune installation Node/npm n'est nécessaire.
 
 ---
 
-## 3. Installation depuis zéro
+## 3. Installation
+
+### 3.1 Lancement rapide avec Docker (recommandé)
+
+```bash
+git clone <url-du-depot> && cd <dossier-du-projet>
+docker compose up --build
+```
+
+Ouvrez ensuite **http://127.0.0.1:8000** (le port 8000 doit être libre). Au premier lancement, l'entrypoint :
+
+- génère `.env` depuis `.env.example` et crée `APP_KEY` si besoin ;
+- attend que MariaDB 10.11 soit prêt, crée le lien `storage` et lance les migrations ;
+- n'insère les données de démonstration **que si la table `clubs` est vide** : les redémarrages ne réinitialisent rien.
+
+Les accès base Docker sont définis dans `docker-compose.yml` (`DB_HOST=db`, base `ensaj_clubs`, utilisateur `ensaj`, mot de passe `secret`) : **aucune modification manuelle de `.env` n'est nécessaire**. `.env.example` reste inchangé pour une utilisation XAMPP locale.
+
+```bash
+docker compose logs -f app   # suivre les logs Apache/Laravel
+docker compose down          # arrêter en conservant les données (volume db-data)
+docker compose down -v       # arrêter ET réinitialiser la base de données
+```
+
+### 3.2 Alternative : XAMPP / PHP local
 
 ```bash
 git clone <url-du-depot> && cd <dossier-du-projet>
@@ -106,6 +132,7 @@ Les tests Feature couvrent l'inscription, la connexion, la matrice des rôles, l
 
 ## 8. Choix techniques
 
+- **Docker** : `Dockerfile` (PHP 8.2 + Apache, GD compilé avec WebP), `docker-compose.yml` (MariaDB 10.11 + volume persistant) et `docker/entrypoint.sh` (`.env`, migrations, seed si vide). Les variables d'environnement Compose surchargent celles de `.env.example`.
 - **Laravel 12** retenu car la version de PHP disponible est 8.2 (Laravel 12 accepte PHP ≥ 8.2).
 - **Enums PHP castés** pour `Role`, `Status`, `FieldOfStudy`, `MessageType` et `MediaType`. Dans les requêtes SQL, la valeur `->value` est utilisée explicitement.
 - **Notifications** : table UUID identique au stub Laravel 12 de `make:notifications-table`, canal `database` uniquement (aucun email).
@@ -140,4 +167,7 @@ resources/views/
   manage/, admin/, notifications/, errors/
 routes/web.php      toutes les routes nommées
 tests/Feature/      tests de comportement
+Dockerfile          image PHP 8.2 + Apache + extensions
+docker-compose.yml  app (port 8000) + MariaDB 10.11
+docker/             entrypoint.sh et php.ini (.dockerignore à la racine)
 ```

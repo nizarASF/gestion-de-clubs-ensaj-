@@ -1,0 +1,42 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Ces variables écrasent celles de .env.example (Dotenv ne les modifie pas).
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_URL: http://127.0.0.1:8000
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_DATABASE: ensaj_clubs
+      DB_USERNAME: ensaj
+      DB_PASSWORD: secret
+    restart: unless-stopped
+
+  db:
+    image: mariadb:10.11
+    environment:
+      MARIADB_ROOT_PASSWORD: secret
+      MARIADB_DATABASE: ensaj_clubs
+      MARIADB_USER: ensaj
+      MARIADB_PASSWORD: secret
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  db-data:

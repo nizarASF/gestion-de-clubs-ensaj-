@@ -26,7 +26,6 @@ class DashboardController extends Controller
             'mediaPending' => $club->media()->where('status', Status::Pending->value)->count(),
             'mediaRejected' => $club->media()->where('status', Status::Rejected->value)->count(),
             'teamPending' => $club->teamMembers()->where('status', Status::Pending->value)->count(),
-            'teamRejected' => $club->teamMembers()->where('status', Status::Rejected->value)->count(),
             'unread' => $user->unreadMessagesCount(),
         ]);
     }

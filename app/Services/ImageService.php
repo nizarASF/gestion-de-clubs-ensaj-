@@ -70,6 +70,20 @@ class ImageService
         return ['path' => $path, 'thumbnail' => null];
     }
 
+    /** Vidéo : extension déduite du MIME réel, jamais du nom fourni par le client. */
+    public function storeVideo(UploadedFile $file, string $dir): string
+    {
+        $extension = match ($file->getMimeType()) {
+            'video/mp4' => 'mp4',
+            'video/webm' => 'webm',
+            default => 'bin',
+        };
+        $path = $dir . '/' . Str::random(40) . '.' . $extension;
+        Storage::disk('public')->put($path, file_get_contents($file->getRealPath()));
+
+        return $path;
+    }
+
     /** Suppression des fichiers physiques (la cascade SQL ne s'en occupe pas). */
     public function delete(?string ...$paths): void
     {

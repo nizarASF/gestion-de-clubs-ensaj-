@@ -143,9 +143,11 @@ tr:last-child td { border-bottom: 0; }
 .tabs a { padding: .5rem .9rem; border-radius: var(--radius) var(--radius) 0 0; color: var(--color-muted); }
 .tabs a.is-active { background: var(--color-primary); color: #fff; font-weight: 700; }
 .empty-state { padding: 2rem; text-align: center; color: var(--color-muted); background: var(--color-surface); border: 1px dashed var(--color-border); border-radius: var(--radius); }
-.pagination { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: 1.5rem; }
+.pagination { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; margin-top: 1.5rem; }
 .pagination a, .pagination span { padding: .35rem .7rem; border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-surface); }
-.pagination .active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.pagination a:hover { background: var(--color-bg); text-decoration: none; }
+.pagination .active, .pagination .pagination__link--active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.pagination .pagination__link--disabled, .pagination .pagination__dots { color: var(--color-muted); background: transparent; border-color: transparent; }
 
 /* ---------- Cartes ---------- */
 .club-card { display: flex; flex-direction: column; gap: .6rem; padding: 1.2rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); box-shadow: var(--shadow); color: var(--color-text); transition: transform .15s ease; }

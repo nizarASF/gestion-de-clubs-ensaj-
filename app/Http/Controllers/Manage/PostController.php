@@ -66,21 +66,25 @@ class PostController extends Controller
         Gate::authorize('update', $post);
         $data = $request->validated();
 
+        $remove = array_intersect($data['remove_images'] ?? [], $post->images->pluck('id')->all());
+        $imagesToRemove = $post->images->whereIn('id', $remove);
+        $newImages = $request->file('images', []);
+
+        // On vérifie d'abord : une erreur ne doit pas supprimer d'images existantes.
+        if ($post->images()->count() - $imagesToRemove->count() + count($newImages) > 5) {
+            return back()->withErrors(['images' => 'Un post ne peut pas contenir plus de 5 images.']);
+        }
+
         // Le statut n'est pas touché : une modification directe ne remet pas en attente.
         $post->title = $data['title'];
         $post->body = $data['body'];
         $post->save();
 
-        $remove = array_intersect($data['remove_images'] ?? [], $post->images->pluck('id')->all());
-        foreach ($post->images->whereIn('id', $remove) as $image) {
+        foreach ($imagesToRemove as $image) {
             $this->images->delete($image->path, $image->thumbnail_path);
             $image->delete();
         }
 
-        $newImages = $request->file('images', []);
-        if ($post->images()->count() + count($newImages) > 5) {
-            return back()->withErrors(['images' => 'Un post ne peut pas contenir plus de 5 images.']);
-        }
         $this->storeImages($post, $newImages, $post->images()->count());
 
         return redirect()->route('manage.posts.index')->with('status', 'Post mis à jour.');

@@ -12,13 +12,16 @@
          data-fetch-url="{{ route('conversations.messages.index', $conversation) }}">
         <div class="chat__messages" id="chat-messages" data-last-id="{{ $conversation->messages->last()?->id ?? 0 }}">
             @forelse($conversation->messages as $message)
-                @php $mine = $message->author_id === auth()->id(); @endphp
-                <article class="bubble @if($mine) bubble--mine @endif @if(! $mine && $message->read_at === null) bubble--unread @endif">
+                @php
+                    $mine = $message->author_id === auth()->id();
+                    $unread = ! $mine && $message->read_at === null && $message->from_club === $isInitiator;
+                @endphp
+                <article class="bubble @if($mine) bubble--mine @endif @if($unread) bubble--unread @endif">
                     <div class="bubble__head">
                         <strong>{{ $message->author->full_name }}</strong>
                         <span>{{ $message->created_at->format('d/m/Y H:i') }}</span>
                         @if($message->type)<span class="badge badge--info">{{ $message->type->label() }}</span>@endif
-                        @if(! $mine && $message->read_at === null)<span class="badge badge--pending">Non lu</span>@endif
+                        @if($unread)<span class="badge badge--pending">Non lu</span>@endif
                     </div>
                     <div class="bubble__body">{{ $message->body }}</div>
                 </article>

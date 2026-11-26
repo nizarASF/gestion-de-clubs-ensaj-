@@ -16,7 +16,9 @@
                     <td>{{ $club->slug }}</td>
                     <td>@if($club->is_active)<span class="badge badge--approved">Actif</span>@else<span class="badge badge--draft">Désactivé</span>@endif</td>
                     <td>
-                        <a class="btn btn--small btn--secondary" href="{{ route('clubs.show', $club) }}">Voir</a>
+                        @if($club->is_active)
+                            <a class="btn btn--small btn--secondary" href="{{ route('clubs.show', $club) }}">Voir</a>
+                        @endif
                         <a class="btn btn--small btn--secondary" href="{{ route('admin.clubs.edit', $club) }}">Modifier</a>
                     </td>
                 </tr>

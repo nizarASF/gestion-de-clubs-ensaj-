@@ -11,6 +11,7 @@ use App\Policies\ConversationPolicy;
 use App\Policies\MediaPolicy;
 use App\Policies\PostPolicy;
 use App\Policies\TeamMemberPolicy;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
@@ -32,6 +33,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Conversation::class, ConversationPolicy::class);
         // L'ability « contact » porte sur un club mais vit dans ConversationPolicy.
         Gate::policy(Club::class, ConversationPolicy::class);
+
+        // Pagination rendue par notre propre vue CSS, sans framework externe.
+        Paginator::defaultView('pagination');
 
         // Compteurs du header, calculés hors des vues.
         View::composer('layouts.app', function ($view): void {

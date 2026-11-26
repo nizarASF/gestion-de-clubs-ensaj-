@@ -11,7 +11,6 @@ use App\Services\ImageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
 
 class MediaController extends Controller
 {
@@ -47,8 +46,8 @@ class MediaController extends Controller
             $path = $stored['path'];
             $thumbnail = $stored['thumbnail'];
         } else {
-            // Vidéo : stockée telle quelle avec un nom aléatoire.
-            $path = $file->store('media', 'public');
+            // Vidéo : nom aléatoire et extension imposée par le MIME vérifié plus haut.
+            $path = $this->images->storeVideo($file, 'media');
             $thumbnail = null;
         }
 

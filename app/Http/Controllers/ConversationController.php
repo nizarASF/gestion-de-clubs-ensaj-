@@ -130,6 +130,7 @@ class ConversationController extends Controller
     {
         Gate::authorize('view', $conversation);
         $after = max(0, (int) $request->query('after', 0));
+        $isInitiator = $conversation->user_id === Auth::id();
 
         $messages = $conversation->messages()
             ->with('author')
@@ -144,7 +145,11 @@ class ConversationController extends Controller
                 'type' => $message->type?->label(),
                 'from_club' => $message->from_club,
                 'mine' => $message->author_id === Auth::id(),
-                'unread' => $message->read_at === null && $message->author_id !== Auth::id(),
+                // Un membre ne considère non lues que les questions des étudiants,
+                // jamais les réponses écrites par un autre membre du club.
+                'unread' => $message->read_at === null
+                    && $message->author_id !== Auth::id()
+                    && $message->from_club === $isInitiator,
             ]);
 
         return response()->json($messages);

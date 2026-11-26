@@ -34,7 +34,9 @@
                     <td><?php echo e($club->slug); ?></td>
                     <td><?php if($club->is_active): ?><span class="badge badge--approved">Actif</span><?php else: ?><span class="badge badge--draft">Désactivé</span><?php endif; ?></td>
                     <td>
-                        <a class="btn btn--small btn--secondary" href="<?php echo e(route('clubs.show', $club)); ?>">Voir</a>
+                        <?php if($club->is_active): ?>
+                            <a class="btn btn--small btn--secondary" href="<?php echo e(route('clubs.show', $club)); ?>">Voir</a>
+                        <?php endif; ?>
                         <a class="btn btn--small btn--secondary" href="<?php echo e(route('admin.clubs.edit', $club)); ?>">Modifier</a>
                     </td>
                 </tr>
